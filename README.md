@@ -1,7 +1,3 @@
-بله، متوجه شدم. پس عنوان کلی فقط **Recommendation System** باشد، در ابتدای README هم کاربرد ALS برای دیتاست‌های بسیار بزرگ را توضیح بدهیم، و در جدول مقایسه فقط **SVD و ALS** را بیاوریم؛ روش ساده‌ی ۱۵ ثانیه‌ای اصلاً ذکر نشود.
-
-یک نکته را هم از متن گزارش حفظ کردم: گزارش شما می‌گوید ALS در معماری توزیع‌شده قابلیت پردازش موازی و مقیاس‌پذیری دارد، اما این README قرار نیست پروژه را با عنوان Single Node معرفی کند. 
-
 # Recommendation System
 
 Recommendation systems are widely used to identify user preferences and suggest relevant items based on previous interactions.
