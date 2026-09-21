@@ -1,0 +1,176 @@
+{% extends "recommender/base.html" %}
+{% block title %}پیش‌بینی{% endblock %}
+{% block nav_predict %}active{% endblock %}
+
+{% block content %}
+
+{% with model_type|default:"svd" as model_type %}
+
+<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">
+🎯 پیش‌بینی امتیاز محصول
+</h2>
+
+<div class="two-col">
+  <!-- فرم -->
+  <div>
+    <div class="card">
+      <div class="card-title">فرم پیش‌بینی</div>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <!-- انتخاب مدل -->
+        <div class="form-group">
+          <label>مدل</label>
+          <select name="model_type">
+            <option value="svd" {% if model_type == 'svd' %}selected{% endif %}>
+              SVD (Surprise)
+            </option>
+
+            <option value="als" {% if model_type == 'als' %}selected{% endif %}>
+              ALS (PySpark)
+            </option>
+
+            <option value="hybrid" {% if model_type == 'hybrid' %}selected{% endif %}>
+              Hybrid (SVD + ALS)
+            </option>
+          </select>
+        </div>
+
+        <!-- user -->
+        <div class="form-group">
+          <label>User ID</label>
+          <input type="text" name="user_id"
+                 value="{{ user_id }}"
+                 placeholder="AK6PVIKDN83MW">
+        </div>
+
+        <!-- product -->
+        <div class="form-group">
+          <label>Product ID</label>
+          <input type="text" name="product_id"
+                 value="{{ product_id }}"
+                 placeholder="B660005667RX">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%">
+          🔮 پیش‌بینی
+        </button>
+      </form>
+    </div>
+
+    <!-- نمونه ID -->
+    {% if sample_users %}
+    <div class="card">
+      <div class="card-title">💡 نمونه ID‌ها</div>
+
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">
+        کاربران:
+      </div>
+
+      {% for u in sample_users %}
+      <button onclick="document.querySelector('[name=user_id]').value='{{ u }}'"
+              class="btn btn-secondary"
+              style="font-size:11px;font-family:monospace;margin:2px">
+        {{ u }}
+      </button>
+      {% endfor %}
+
+      <div style="font-size:12px;color:var(--muted);margin:10px 0 8px">
+        محصولات:
+      </div>
+
+      {% for p in sample_products %}
+      <button onclick="document.querySelector('[name=product_id]').value='{{ p }}'"
+              class="btn btn-secondary"
+              style="font-size:11px;font-family:monospace;margin:2px">
+        {{ p }}
+      </button>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- نتیجه -->
+  <div>
+
+    {% if error %}
+      <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    {% if prediction %}
+    <div class="card" style="text-align:center">
+
+      <!-- emoji -->
+      <div style="font-size:48px;margin-bottom:8px">
+        {% if prediction >= 4 %}😍
+        {% elif prediction >= 3 %}😊
+        {% elif prediction >= 2 %}😐
+        {% else %}😞
+        {% endif %}
+      </div>
+
+      <div style="font-size:14px;color:var(--muted);margin-bottom:8px">
+        پیش‌بینی امتیاز
+      </div>
+
+      <div style="font-size:52px;font-weight:700;color:var(--purple)">
+        {{ prediction|floatformat:2 }}
+      </div>
+
+      <div style="font-size:13px;color:var(--muted);margin:8px 0">
+        از ۵ ستاره
+      </div>
+
+      <!-- ستاره -->
+      <div style="margin:12px 0">
+        {% for i in "12345" %}
+          <span style="font-size:24px;
+            color:{% if forloop.counter <= prediction|floatformat:0 %}
+            var(--amber)
+            {% else %}
+            var(--border)
+            {% endif %}">
+            ⭐
+          </span>
+        {% endfor %}
+      </div>
+
+      <div style="font-size:13px;color:var(--muted);margin-top:12px">
+        {% if prediction >= 4.5 %}
+          احتمالاً این محصول را دوست خواهد داشت
+        {% elif prediction >= 3.5 %}
+          احتمالاً تجربه خوبی خواهد داشت
+        {% elif prediction >= 2.5 %}
+          تجربه متوسطی پیش‌بینی می‌شود
+        {% else %}
+          احتمالاً این محصول مناسب نیست
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- جزئیات -->
+    <div class="card">
+      <div class="card-title">📝 جزئیات</div>
+      <table>
+        <tr><th>کاربر</th><td>{{ user_id }}</td></tr>
+        <tr><th>محصول</th><td>{{ product_id }}</td></tr>
+        <tr><th>مدل</th><td>{{ model_type|upper }}</td></tr>
+        <tr><th>امتیاز</th><td><strong>{{ prediction|floatformat:2 }}</strong></td></tr>
+      </table>
+    </div>
+
+    {% else %}
+    <div class="card" style="text-align:center;padding:48px 24px">
+      <div style="font-size:48px;margin-bottom:12px">🔮</div>
+      <p style="color:var(--muted);font-size:13px">
+        یک User ID و Product ID وارد کنید.
+      </p>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+{% endwith %}
+{% endblock %}

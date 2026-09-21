@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}سیستم توصیه‌گر{% endblock %} | فصل ۱۳</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#21262d;
+  --border:#30363d;--text:#e6edf3;--muted:#8b949e;
+  --purple:#a371f7;--teal:#39d353;--amber:#d29922;
+  --blue:#58a6ff;--red:#f85149;--coral:#f0883e;
+  --radius:8px;
+}
+body{font-family:'Vazirmatn',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Nav */
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:0;position:sticky;top:0;z-index:100}
+.nav-brand{font-size:15px;font-weight:700;color:var(--purple);padding:14px 0;margin-left:24px;white-space:nowrap}
+.nav-links{display:flex;gap:0;flex:1}
+.nav-links a{padding:14px 16px;color:var(--muted);font-size:13px;border-bottom:2px solid transparent;transition:.15s}
+.nav-links a:hover,.nav-links a.active{color:var(--text);text-decoration:none;border-bottom-color:var(--purple)}
+
+/* Layout */
+.container{max-width:1100px;margin:0 auto;padding:32px 24px}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px}
+.card-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+
+/* Badges */
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:500}
+.badge-purple{background:rgba(163,113,247,.15);color:var(--purple);border:1px solid rgba(163,113,247,.3)}
+.badge-teal{background:rgba(57,211,83,.1);color:var(--teal);border:1px solid rgba(57,211,83,.3)}
+.badge-amber{background:rgba(210,153,34,.1);color:var(--amber);border:1px solid rgba(210,153,34,.3)}
+.badge-red{background:rgba(248,81,73,.1);color:var(--red);border:1px solid rgba(248,81,73,.3)}
+.badge-blue{background:rgba(88,166,255,.1);color:var(--blue);border:1px solid rgba(88,166,255,.3)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:inherit;transition:.15s}
+.btn-primary{background:var(--purple);color:#fff}
+.btn-primary:hover{background:#b57ffb}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--muted)}
+.btn-teal{background:rgba(57,211,83,.15);color:var(--teal);border:1px solid rgba(57,211,83,.3)}
+.btn-teal:hover{background:rgba(57,211,83,.25)}
+.btn-amber{background:rgba(210,153,34,.15);color:var(--amber);border:1px solid rgba(210,153,34,.3)}
+.btn-amber:hover{background:rgba(210,153,34,.25)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* Form elements */
+input,select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--radius);font-family:inherit;font-size:13px;width:100%}
+input:focus,select:focus{outline:none;border-color:var(--purple)}
+label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.form-group{margin-bottom:16px}
+
+/* Table */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:right;padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted);font-weight:500;white-space:nowrap}
+td{padding:8px 12px;border-bottom:1px solid rgba(48,54,61,.5);color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+
+/* Stat blocks */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+.stat-value{font-size:22px;font-weight:700;color:var(--purple)}
+.stat-label{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* Code block */
+.code{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;font-family:monospace;font-size:12px;color:var(--teal);overflow-x:auto;margin-bottom:12px}
+.code .kw{color:var(--purple)}
+.code .cm{color:var(--muted)}
+.code .st{color:var(--coral)}
+
+/* Alert */
+.alert{padding:12px 16px;border-radius:var(--radius);font-size:13px;margin-bottom:16px}
+.alert-success{background:rgba(57,211,83,.1);border:1px solid rgba(57,211,83,.3);color:var(--teal)}
+.alert-error{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);color:var(--red)}
+.alert-info{background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.3);color:var(--blue)}
+
+/* Progress */
+.progress-bar{height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;background:var(--purple);border-radius:2px;transition:width .3s}
+
+/* Rating bar */
+.rating-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.rating-bar-wrap{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.rating-bar-fill{height:100%;background:var(--amber);border-radius:4px}
+
+/* Spinner */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--purple);border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+
+/* Two column */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:640px){.two-col{grid-template-columns:1fr}}
+
+/* Step list */
+.steps{list-style:none;counter-reset:step}
+.steps li{counter-increment:step;display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border-bottom:none}
+.steps li::before{content:counter(step);background:var(--purple);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+</style>
+</head>
+<body>
+<nav>
+  <span class="nav-brand">📊 فصل ۱۳</span>
+  <div class="nav-links">
+    <a href="/" class="{% block nav_home %}{% endblock %}">خانه</a>
+    <a href="/eda/" class="{% block nav_eda %}{% endblock %}">تحلیل داده</a>
+    <a href="/train/" class="{% block nav_train %}{% endblock %}">آموزش مدل</a>
+    <a href="/predict/" class="{% block nav_predict %}{% endblock %}">پیش‌بینی</a>
+    <a href="/compare/" class="{% block nav_compare %}{% endblock %}">مقایسه</a>
+  </div>
+</nav>
+<div class="container">
+{% block content %}{% endblock %}
+</div>
+</body>
+</html>

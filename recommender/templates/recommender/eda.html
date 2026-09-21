@@ -1,0 +1,154 @@
+{% extends "recommender/base.html" %}
+{% block title %}تحلیل داده{% endblock %}
+{% block nav_eda %}active{% endblock %}
+{% block content %}
+
+<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">🔍 تحلیل داده — Amazon Electronics</h2>
+
+<div class="alert alert-info">
+  داده روی <strong>{{ sample_size|floatformat:0 }}</strong> رکورد اول اجرا شده.
+  <a href="/eda/?sample=1048576">بارگذاری کل داده (کندتر)</a>
+</div>
+
+<!-- Shape & Dtypes -->
+<div class="stat-grid">
+  <div class="stat">
+    <div class="stat-value">{{ stats.shape.0|floatformat:0 }}</div>
+    <div class="stat-label">تعداد ردیف</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">{{ stats.shape.1 }}</div>
+    <div class="stat-label">تعداد ستون</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">{{ stats.unique_ratings|length }}</div>
+    <div class="stat-label">رتبه‌های منحصربه‌فرد</div>
+  </div>
+  <div class="stat" style="--purple:var(--teal)">
+    <div class="stat-value">{{ stats.top_users.0.count }}</div>
+    <div class="stat-label">بیشترین امتیاز یک کاربر</div>
+  </div>
+  <div class="stat" style="--purple:var(--amber)">
+    <div class="stat-value">{{ stats.top_products.0.count }}</div>
+    <div class="stat-label">بیشترین امتیاز یک محصول</div>
+  </div>
+</div>
+
+<!-- Column info -->
+<div class="card">
+  <div class="card-title">🏗️ ساختار داده — <code style="font-size:12px">pandas_df.dtypes</code></div>
+  <table>
+    <thead><tr><th>نام ستون</th><th>نوع داده</th><th>توضیح</th></tr></thead>
+    <tbody>
+      <tr><td><code>user_id</code></td><td><span class="badge badge-blue">object</span></td><td>شناسه منحصربه‌فرد کاربر</td></tr>
+      <tr><td><code>product_id</code></td><td><span class="badge badge-blue">object</span></td><td>شناسه منحصربه‌فرد محصول</td></tr>
+      <tr><td><code>rating</code></td><td><span class="badge badge-teal">int64</span></td><td>امتیاز (۱ تا ۵ ستاره)</td></tr>
+      <tr><td><code>timestamp</code></td><td><span class="badge badge-teal">int64</span></td><td>زمان امتیازدهی (برای مدل استفاده نمی‌شود)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Rating Distribution -->
+<div class="card">
+  <div class="card-title">⭐ توزیع رتبه‌بندی‌ها — <code style="font-size:12px">np.sort(df["rating"].unique())</code></div>
+  <div style="margin-bottom:12px">
+    {% for r in stats.unique_ratings %}
+      <span class="badge badge-amber" style="margin-left:6px">{{ r }} ⭐</span>
+    {% endfor %}
+  </div>
+  {% for item in stats.rating_distribution %}
+  <div class="rating-row">
+    <span style="width:60px;color:var(--muted);font-size:12px">{{ item.rating }} ستاره</span>
+    <div class="rating-bar-wrap">
+      <div class="rating-bar-fill" style="width:{% widthratio item.count stats.shape.0 100 %}%"></div>
+    </div>
+    <span style="width:70px;text-align:left;color:var(--muted);font-size:12px">{{ item.count }}</span>
+  </div>
+  {% endfor %}
+  <div style="margin-top:12px;font-size:12px;color:var(--muted)">
+    ۱ = Very Poor · ۲ = Poor · ۳ = Average · ۴ = Good · ۵ = Excellent
+  </div>
+</div>
+
+<div class="two-col">
+  <!-- Top Users -->
+  <div class="card">
+    <div class="card-title">👤 پرکارترین کاربران — <code style="font-size:12px">groupby('user_id').size()</code></div>
+    <table>
+      <thead><tr><th>user_id</th><th>تعداد امتیاز</th></tr></thead>
+      <tbody>
+        {% for u in stats.top_users %}
+        <tr>
+          <td style="font-family:monospace;font-size:12px">{{ u.user_id }}</td>
+          <td><span class="badge badge-purple">{{ u.count }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Top Products -->
+  <div class="card">
+    <div class="card-title">📦 پرامتیازترین محصولات — <code style="font-size:12px">groupby('product_id').size()</code></div>
+    <table>
+      <thead><tr><th>product_id</th><th>تعداد امتیاز</th></tr></thead>
+      <tbody>
+        {% for p in stats.top_products %}
+        <tr>
+          <td style="font-family:monospace;font-size:12px">{{ p.product_id }}</td>
+          <td><span class="badge badge-teal">{{ p.count }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Sample data -->
+<div class="card">
+  <div class="card-title">📋 نمونه داده — <code style="font-size:12px">pandas_df.head()</code></div>
+  <div style="overflow-x:auto">
+  <table>
+    <thead><tr><th>#</th><th>user_id</th><th>product_id</th><th>rating</th><th>timestamp</th></tr></thead>
+    <tbody>
+      {% for row in stats.sample %}
+      <tr>
+        <td style="color:var(--muted)">{{ forloop.counter0 }}</td>
+        <td style="font-family:monospace;font-size:12px">{{ row.user_id }}</td>
+        <td style="font-family:monospace;font-size:12px">{{ row.product_id }}</td>
+        <td>
+          {% for i in "12345" %}{% if forloop.counter <= row.rating %}⭐{% endif %}{% endfor %}
+          <span style="color:var(--muted);font-size:12px">{{ row.rating }}</span>
+        </td>
+        <td style="color:var(--muted);font-size:12px">{{ row.timestamp }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- Code comparison -->
+<div class="card">
+  <div class="card-title">🔄 مقایسه Pandas vs PySpark</div>
+  <div class="two-col">
+    <div>
+      <div style="color:var(--muted);font-size:12px;margin-bottom:6px">Pandas</div>
+      <div class="code"><span class="kw">import</span> pandas <span class="kw">as</span> pd
+df.groupby(<span class="st">'user_id'</span>).size()
+   .reset_index(name=<span class="st">'count'</span>)
+   .sort_values(<span class="st">'count'</span>, ascending=<span class="kw">False</span>)
+   .head(5)</div>
+    </div>
+    <div>
+      <div style="color:var(--muted);font-size:12px;margin-bottom:6px">PySpark</div>
+      <div class="code">spark_df.groupBy(<span class="st">"user_id"</span>)
+        .count()
+        .orderBy(<span class="st">"count"</span>,
+           ascending=<span class="kw">False</span>)
+        .show(5)</div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

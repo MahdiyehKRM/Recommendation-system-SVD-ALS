@@ -1,0 +1,135 @@
+{% extends "recommender/base.html" %}
+{% block title %}آموزش مدل{% endblock %}
+{% block nav_train %}active{% endblock %}
+{% block content %}
+
+<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">🏋️ آموزش مدل توصیه‌گر</h2>
+
+<div class="two-col">
+
+  <!-- SVD Card -->
+  <div class="card" id="svd-card">
+    <div class="card-title">🧠 Surprise — SVD</div>
+
+    <p style="margin-top:12px;font-size:13px;color:#666">
+      حجم داده: <strong>100,000 رکورد</strong>
+    </p>
+
+    <button class="btn btn-purple" id="btn-svd" onclick="startTraining('svd')"
+      style="background:var(--purple);color:#fff;width:100%">
+      🚀 آموزش SVD
+    </button>
+
+    <div id="svd-status" style="margin-top:12px;display:none"></div>
+
+    {% if svd_result %}
+    <div class="alert alert-success" style="margin-top:12px">
+      ✓ مدل آموزش دیده — RMSE: <strong>{{ svd_result.rmse }}</strong>
+    </div>
+    <div id="svd-result-table">{% include "recommender/_result_table.html" with result=svd_result %}</div>
+    {% endif %}
+  </div>
+
+  <!-- ALS Card -->
+  <div class="card" id="als-card">
+    <div class="card-title">⚡ PySpark — ALS</div>
+
+    <p style="margin-top:12px;font-size:13px;color:#666">
+      حجم داده: <strong>100,000 رکورد</strong>
+    </p>
+
+    <button class="btn btn-amber" id="btn-als" onclick="startTraining('als')"
+      style="width:100%">
+      🚀 آموزش ALS
+    </button>
+
+    <div id="als-status" style="margin-top:12px;display:none"></div>
+
+    {% if als_result %}
+    <div class="alert alert-success" style="margin-top:12px">
+      ✓ مدل آموزش دیده — RMSE: <strong>{{ als_result.rmse }}</strong>
+    </div>
+    <div id="als-result-table">{% include "recommender/_result_table.html" with result=als_result %}</div>
+    {% endif %}
+  </div>
+
+</div>
+
+<script>
+function startTraining(model) {
+  const sample = '100000';  // 🔥 ثابت شد
+
+  const btn = document.getElementById('btn-' + model);
+  const statusDiv = document.getElementById(model + '-status');
+
+  btn.disabled = true;
+  statusDiv.style.display = 'block';
+  statusDiv.innerHTML = '<div class="alert alert-info">⏳ در حال آموزش...</div>';
+
+  const fd = new FormData();
+  fd.append('model_type', model);
+  fd.append('sample_size', sample);
+
+  fetch('/train/', {method:'POST', body:fd})
+    .then(r => r.json())
+    .then(d => {
+      if (d.status === 'started') pollStatus(model);
+      else {
+        btn.disabled = false;
+        statusDiv.innerHTML = '<div class="alert alert-error">' + (d.message || 'خطا') + '</div>';
+      }
+    });
+}
+
+function pollStatus(model) {
+  const statusDiv = document.getElementById(model + '-status');
+  const btn = document.getElementById('btn-' + model);
+
+  const iv = setInterval(() => {
+    fetch('/train/status/?model=' + model)
+      .then(r => r.json())
+      .then(d => {
+
+        if (d.status && d.status.startsWith('error')) {
+          clearInterval(iv);
+          btn.disabled = false;
+          statusDiv.innerHTML = '<div class="alert alert-error">' + d.status + '</div>';
+          return;
+        }
+
+        if (d.status === 'done' && d.result) {
+          clearInterval(iv);
+          btn.disabled = false;
+
+          statusDiv.innerHTML = `
+            <div class="alert alert-success">
+              ✓ آموزش کامل شد — RMSE: <strong>${d.result.rmse}</strong>
+            </div>
+            <table style="margin-top:12px">
+              <thead>
+                <tr>
+                  <th>user_id</th>
+                  <th>product_id</th>
+                  <th>واقعی</th>
+                  <th>پیش‌بینی</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${d.result.sample.map(r => `
+                  <tr>
+                    <td>${r.user_id}</td>
+                    <td>${r.product_id}</td>
+                    <td>${r.actual}</td>
+                    <td>${r.predicted}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>`;
+        }
+
+      });
+  }, 2000);
+}
+</script>
+
+{% endblock %}

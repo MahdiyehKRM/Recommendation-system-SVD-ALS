@@ -1,0 +1,138 @@
+{% extends "recommender/base.html" %}
+{% block title %}مقایسه{% endblock %}
+{% block nav_compare %}active{% endblock %}
+{% block content %}
+
+<h2 style="font-size:20px;font-weight:700;margin-bottom:20px">⚖️ مقایسه Surprise vs PySpark</h2>
+
+{% if not svd_result and not als_result %}
+<div class="alert alert-info">
+  ابتدا حداقل یکی از مدل‌ها را در <a href="/train/">صفحه آموزش</a> train کنید.
+</div>
+{% endif %}
+
+<!-- RMSE comparison -->
+{% if svd_result or als_result %}
+<div class="card">
+  <div class="card-title">📊 مقایسه RMSE</div>
+  <div class="two-col">
+    <div style="text-align:center;padding:20px">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:8px">SVD — Surprise</div>
+      {% if svd_result %}
+      <div style="font-size:42px;font-weight:700;color:var(--purple)">{{ svd_result.rmse }}</div>
+      <div class="progress-bar" style="margin:12px auto;max-width:200px">
+        <div class="progress-fill" style="width:{% widthratio svd_result.rmse 5 100 %}%"></div>
+      </div>
+      <span class="badge badge-purple">RMSE کمتر = بهتر</span>
+      {% else %}
+      <span class="badge badge-red">آموزش نشده</span>
+      {% endif %}
+    </div>
+    <div style="text-align:center;padding:20px">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:8px">ALS — PySpark</div>
+      {% if als_result %}
+      <div style="font-size:42px;font-weight:700;color:var(--amber)">{{ als_result.rmse }}</div>
+      <div class="progress-bar" style="margin:12px auto;max-width:200px">
+        <div class="progress-fill" style="width:{% widthratio als_result.rmse 5 100 %}%;background:var(--amber)"></div>
+      </div>
+      <span class="badge badge-amber">RMSE کمتر = بهتر</span>
+      {% else %}
+      <span class="badge badge-red">آموزش نشده</span>
+      {% endif %}
+    </div>
+  </div>
+  {% if svd_result and als_result %}
+  <div class="alert alert-info" style="margin-top:12px">
+    SVD با RMSE {{ svd_result.rmse }} در مقابل ALS با RMSE {{ als_result.rmse }} —
+    {% if svd_result.rmse < als_result.rmse %}
+      در این اجرا SVD عملکرد بهتری داشت.
+    {% else %}
+      در این اجرا ALS عملکرد بهتری داشت.
+    {% endif %}
+    (نتایج بسته به sample size متفاوت است)
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- Sample predictions side by side -->
+{% if svd_result or als_result %}
+<div class="two-col">
+  <div class="card">
+    <div class="card-title">🧠 نمونه پیش‌بینی‌های SVD</div>
+    {% if svd_result %}
+    <table>
+      <thead><tr><th>user_id</th><th>product_id</th><th>واقعی</th><th>پیش‌بینی</th><th>خطا</th></tr></thead>
+      <tbody>
+        {% for r in svd_result.sample %}
+        <tr>
+          <td style="font-family:monospace;font-size:10px">{{ r.user_id|slice:":12" }}</td>
+          <td style="font-family:monospace;font-size:10px">{{ r.product_id }}</td>
+          <td>{{ r.actual }}</td>
+          <td style="color:var(--purple)">{{ r.predicted }}</td>
+          <td>
+            {% with diff=r.actual|add:"-1" %}
+            <span style="color:var(--{% if r.actual == r.predicted %}teal{% else %}amber{% endif %})">
+              ±{{ r.predicted|add:"-1" }}
+            </span>
+            {% endwith %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--muted);font-size:13px">مدل آموزش نشده.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-title">⚡ نمونه پیش‌بینی‌های ALS</div>
+    {% if als_result %}
+    <table>
+      <thead><tr><th>user_id</th><th>product_id</th><th>واقعی</th><th>پیش‌بینی</th></tr></thead>
+      <tbody>
+        {% for r in als_result.sample %}
+        <tr>
+          <td style="font-family:monospace;font-size:10px">{{ r.user_id|slice:":12" }}</td>
+          <td style="font-family:monospace;font-size:10px">{{ r.product_id }}</td>
+          <td>{{ r.actual }}</td>
+          <td style="color:var(--amber)">{{ r.predicted }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--muted);font-size:13px">مدل آموزش نشده.</p>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Theory comparison table -->
+<div class="card">
+  <div class="card-title">📖 مقایسه نظری SVD vs ALS</div>
+  <div style="overflow-x:auto">
+  <table>
+    <thead>
+      <tr>
+        <th>ویژگی</th>
+        <th style="color:var(--purple)">SVD — Surprise</th>
+        <th style="color:var(--amber)">ALS — PySpark</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>تکنیک پایه</td><td>Matrix Factorization</td><td>Matrix Factorization</td></tr>
+      <tr><td>مقیاس‌پذیری</td><td>Small / Medium</td><td>Large Scale (Big Data)</td></tr>
+      <tr><td>اجرا</td><td>Single Machine</td><td>Distributed (Spark)</td></tr>
+      <tr><td>encoding</td><td>خودکار</td><td>نیاز به StringIndexer</td></tr>
+      <tr><td>API</td><td>مشابه scikit-learn</td><td>PySpark MLlib</td></tr>
+      <tr><td>الگوریتم</td><td>Gradient Descent</td><td>Alternating Updates</td></tr>
+      <tr><td>cold start</td><td>محدود</td><td>پارامتر coldStartStrategy</td></tr>
+      <tr><td>RMSE معمول (این dataset)</td><td>~1.31</td><td>~1.96</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+{% endblock %}

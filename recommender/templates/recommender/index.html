@@ -1,0 +1,89 @@
+{% extends "recommender/base.html" %}
+{% block title %}خانه{% endblock %}
+{% block nav_home %}active{% endblock %}
+{% block content %}
+
+<div style="text-align:center;padding:40px 0 32px">
+  <div style="font-size:48px;margin-bottom:16px">🎯</div>
+  <h1 style="font-size:28px;font-weight:700;margin-bottom:8px">سیستم توصیه‌گر Amazon Electronics</h1>
+  <p style="color:var(--muted);font-size:15px;max-width:600px;margin:0 auto 24px">
+    پیاده‌سازی عملی فصل ۱۳ کتاب — Collaborative Filtering با Surprise (SVD) و PySpark (ALS)
+  </p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+    <span class="badge badge-purple">SVD · Surprise</span>
+    <span class="badge badge-teal">ALS · PySpark</span>
+    <span class="badge badge-blue">Pandas EDA</span>
+    <span class="badge badge-amber">Matrix Factorization</span>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <div class="card-title">📚 سرفصل‌های فصل ۱۳</div>
+    <ul class="steps">
+      <li>مفاهیم Recommender Systems و انواع آن</li>
+      <li>بارگذاری و کاوش داده با Pandas</li>
+      <li>همان EDA با PySpark</li>
+      <li>ساخت مدل SVD با Surprise</li>
+      <li>ارزیابی مدل با RMSE</li>
+      <li>ساخت مدل ALS با PySpark</li>
+      <li>مقایسه دو رویکرد</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🗺️ مراحل استفاده</div>
+    <ul class="steps">
+      <li><a href="/eda/">تحلیل داده</a> — آمار و نمودار داده Amazon</li>
+      <li><a href="/train/">آموزش مدل</a> — انتخاب SVD یا ALS و train کردن</li>
+      <li><a href="/predict/">پیش‌بینی</a> — ورود user_id و product_id</li>
+      <li><a href="/compare/">مقایسه</a> — RMSE و نمونه پیش‌بینی‌های هر دو مدل</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">⚡ وضعیت مدل‌ها</div>
+  <div class="two-col">
+    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border)">
+      <span style="font-size:24px">🧠</span>
+      <div>
+        <div style="font-weight:500;margin-bottom:4px">SVD — Surprise</div>
+        {% if svd_trained %}
+          <span class="badge badge-teal">✓ آموزش دیده</span>
+        {% else %}
+          <span class="badge badge-red">آموزش نشده</span>
+        {% endif %}
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border)">
+      <span style="font-size:24px">⚡</span>
+      <div>
+        <div style="font-weight:500;margin-bottom:4px">ALS — PySpark</div>
+        {% if als_trained %}
+          <span class="badge badge-teal">✓ آموزش دیده</span>
+        {% else %}
+          <span class="badge badge-amber">آموزش نشده</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:16px">
+    <a href="/train/" class="btn btn-primary">شروع آموزش مدل ←</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">📦 دیتاست</div>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:12px">
+    Amazon Electronics Ratings — دانشگاه UC San Diego — بیش از ۱ میلیون رتبه‌بندی
+  </p>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+    <div class="stat"><div class="stat-value">1M+</div><div class="stat-label">تعداد رکورد</div></div>
+    <div class="stat"><div class="stat-value">4</div><div class="stat-label">ستون</div></div>
+    <div class="stat"><div class="stat-value">1-5</div><div class="stat-label">بازه رتبه</div></div>
+    <div class="stat"><div class="stat-value">⭐</div><div class="stat-label">امتیاز محصولات</div></div>
+  </div>
+</div>
+
+{% endblock %}
